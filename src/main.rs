@@ -14,6 +14,7 @@ enum CellValue {
 enum GameState {
     MainMenu,
     MatchWithBot(MatchWithBot),
+    MatchWithPlayer(MatchWithPlayer),
     GameOver,
 }
 
@@ -22,12 +23,18 @@ enum MatchWithBot {
     BotTurn,
 }
 
+enum MatchWithPlayer {
+    oTurn,
+    xTurn,
+}
+
 struct Game {
     state: GameState,
     field: [CellValue; 9],
     str_to_show: Vec<String>,
 }
 
+// Методы структуры игры
 impl Game {
     fn new_game() -> Self {
         let mut game = Self {
@@ -46,6 +53,7 @@ impl Game {
     }
 }
 
+// Методы игры
 impl Game {
     fn is_game_over(&self) -> bool {
         if let GameState::GameOver = self.state { true } else { false }
@@ -55,11 +63,10 @@ impl Game {
         self.str_to_show.clear();
 
         match &self.state {
-            GameState::MainMenu => {
-                self.check_main_menu(req);
-            },
+            GameState::MainMenu => self.check_main_menu(req),
             GameState::GameOver => self.write_game_over(),
-            GameState::MatchWithBot(Turn) => ()
+            GameState::MatchWithBot(Turn) => self.write_in_development(),
+            GameState::MatchWithPlayer(Turn) => self.write_in_development(),
         }
     }
 
@@ -70,8 +77,8 @@ impl Game {
                     Ok(n) => {
                         let choice: u8 = n;
                         match choice {
-                            1 => (),
-                            2 => (),
+                            1 => self.write_in_development(),
+                            2 => self.start_match_with_player(),
                             3 => {
                                 self.state = GameState::GameOver;
                                 self.write_game_over();
@@ -91,7 +98,34 @@ impl Game {
             }
         }
     }
-    
+
+    // fn start_match_with_bot(&mut self) {
+    //     let first_player = Self::rand_player();
+
+    //     if first_player == 1 {
+    //         self.state = GameState::MatchWithBot(MatchWithBot::PlayerTurn);
+    //         self.write_field();
+    //         self.str_to_show.push(String::from("Выбери ячейку (1-9 сверху вниз, слева направо)"));
+    //     } else {
+    //         self.state = GameState::MatchWithBot(MatchWithBot::BotTurn);
+    //     }
+    // }
+
+    fn start_match_with_player(&mut self) {
+        self.state = GameState::MatchWithPlayer(MatchWithPlayer::oTurn);
+        self.write_field();
+        self.str_to_show.push(String::from("Игрок с ноликом, выбери ячейку (1-9 сверху вниз, слева направо)"));
+    }
+
+    fn show(&mut self) {
+        for st in &self.str_to_show {
+            println!("{st}");
+        }
+    }
+}
+
+// Методы записи строк для отображения
+impl Game {
     fn write_main_menu(&mut self) {
         self.str_to_show.push(String::from("==================="));
         self.str_to_show.push(String::from("= Крестики-нолики ="));
@@ -108,7 +142,11 @@ impl Game {
         self.str_to_show.push(String::from("Спасибо за игру!"));
     }
 
-    fn get_field(&mut self) {
+    fn write_in_development(&mut self) {
+        self.str_to_show.push(String::from("Находится в разработке!"));
+    }
+
+    fn write_field(&mut self) {
         // ===========
         // =  _|_|_  =
         // =  _|_|_  =
@@ -171,12 +209,6 @@ impl Game {
         self.str_to_show.push(line_2);
         self.str_to_show.push(line_3);
         self.str_to_show.push(String::from("==========="));
-    }
-
-    fn show(&mut self) {
-        for st in &self.str_to_show {
-            println!("{st}");
-        }
     }
 }
 
